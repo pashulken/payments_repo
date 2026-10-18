@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/declined/v1/payment_intents"
+  },
+  "response": {
+    "status": 402,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "error": {
+        "code": "card_declined",
+        "decline_code": "insufficient_funds",
+        "message": "Your card has insufficient funds."
+      }
+    }
+  }
+}

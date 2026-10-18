@@ -1,0 +1,37 @@
+{
+  "$id": "https://qa.local/schemas/payment.schema.json",
+  "type": "object",
+  "required": [
+    "id",
+    "stripe_pi_id",
+    "amount",
+    "currency",
+    "status",
+    "capture_method",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "stripe_pi_id": { "type": "string", "pattern": "^pi_" },
+    "amount": { "type": "integer", "minimum": 1 },
+    "currency": { "const": "usd" },
+    "status": {
+      "enum": [
+        "succeeded",
+        "requires_capture",
+        "requires_action",
+        "failed",
+        "canceled",
+        "refunded"
+      ]
+    },
+    "capture_method": { "enum": ["automatic", "manual"] },
+    "customer_email": { "type": ["string", "null"] },
+    "description": { "type": ["string", "null"] },
+    "metadata": { "type": "object" },
+    "idempotency_key": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

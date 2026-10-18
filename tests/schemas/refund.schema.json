@@ -1,0 +1,21 @@
+{
+  "$id": "https://qa.local/schemas/refund.schema.json",
+  "type": "object",
+  "required": [
+    "id",
+    "payment_id",
+    "stripe_refund_id",
+    "amount",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "payment_id": { "type": "string", "format": "uuid" },
+    "stripe_refund_id": { "type": "string", "pattern": "^re_" },
+    "amount": { "type": "integer", "minimum": 1 },
+    "status": { "const": "succeeded" },
+    "reason": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

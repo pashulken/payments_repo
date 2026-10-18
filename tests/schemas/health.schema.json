@@ -1,0 +1,10 @@
+{
+  "$id": "https://qa.local/schemas/health.schema.json",
+  "type": "object",
+  "required": ["status", "db", "timestamp"],
+  "properties": {
+    "status": { "enum": ["ok", "error"] },
+    "db": { "enum": ["connected", "disconnected"] },
+    "timestamp": { "type": "string", "format": "date-time" }
+  }
+}

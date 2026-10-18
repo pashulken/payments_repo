@@ -1,0 +1,13 @@
+{
+  "$id": "https://qa.local/schemas/captured-payment.schema.json",
+  "allOf": [
+    { "$ref": "https://qa.local/schemas/payment.schema.json" },
+    {
+      "type": "object",
+      "required": ["captured_amount"],
+      "properties": {
+        "captured_amount": { "type": "integer", "minimum": 1 }
+      }
+    }
+  ]
+}

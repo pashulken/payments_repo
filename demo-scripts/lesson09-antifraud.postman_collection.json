@@ -1,0 +1,413 @@
+{
+  "info": {
+    "name": "Lesson 9 — Antifraud (Stripe Radar)",
+    "description": "Колекція запитів для тестування Antifraud та Stripe Radar тестових карток (Заняття 9)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Normal risk (approve)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "description": "",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "description": "Звичайна транзакція — Radar пропускає.\nОчікується: succeeded, risk_level: normal, type: authorized",
+        "url": {
+          "raw": "https://api.stripe.com/v1/payment_intents",
+          "protocol": "https",
+          "host": [
+            "api",
+            "stripe",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "payment_intents"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "amount",
+              "value": "1700",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "currency",
+              "value": "eur",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "payment_method",
+              "value": "pm_card_visa",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "confirm",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[enabled]",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[allow_redirects]",
+              "value": "never",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "expand[]",
+              "value": "latest_charge",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "receipt_email",
+              "value": "test@tempmail.com",
+              "disabled": true,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "customer",
+              "value": "cus_VEe7dbjfztGB5T",
+              "disabled": true,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "mandate_data[customer_acceptance][online][ip_address]",
+              "value": "187.15.86.223",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "mandate_data[customer_acceptance][type]",
+              "value": "online",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "mandate_data[customer_acceptance][online][user_agent]",
+              "value": "PostmanRuntime/7.32.3",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Blocked by Radar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "description": "",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "description": "Stripe Radar блокує ДО Visa — network навіть не знає.\nОчікується: HTTP status 402, type: blocked, network_status: not_sent_to_network",
+        "url": {
+          "raw": "https://api.stripe.com/v1/payment_intents",
+          "protocol": "https",
+          "host": [
+            "api",
+            "stripe",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "payment_intents"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "amount",
+              "value": "5000",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "currency",
+              "value": "usd",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "payment_method",
+              "value": "pm_card_radarBlock",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "confirm",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[enabled]",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[allow_redirects]",
+              "value": "never",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "expand[]",
+              "value": "latest_charge",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Highest risk (passed)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "description": "",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "description": "Транзакція succeeded, але risk_level: highest.\nУ Radar for Fraud Teams — потрапила б у review queue.",
+        "url": {
+          "raw": "https://api.stripe.com/v1/payment_intents",
+          "protocol": "https",
+          "host": [
+            "api",
+            "stripe",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "payment_intents"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "amount",
+              "value": "7000",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "currency",
+              "value": "usd",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "payment_method",
+              "value": "pm_card_riskLevelHighest",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "confirm",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[enabled]",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[allow_redirects]",
+              "value": "never",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "expand[]",
+              "value": "latest_charge",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "receipt_email",
+              "value": "vip_customer@example.com",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Elevated risk",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded",
+            "description": "",
+            "disabled": false,
+            "type": "default"
+          }
+        ],
+        "description": "Середній ризик — пройшла, але позначена як elevated.",
+        "url": {
+          "raw": "https://api.stripe.com/v1/payment_intents",
+          "protocol": "https",
+          "host": [
+            "api",
+            "stripe",
+            "com"
+          ],
+          "path": [
+            "v1",
+            "payment_intents"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "amount",
+              "value": "5000",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "currency",
+              "value": "usd",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "payment_method",
+              "value": "pm_card_riskLevelElevated",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "confirm",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[enabled]",
+              "value": "true",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "automatic_payment_methods[allow_redirects]",
+              "value": "never",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            },
+            {
+              "key": "expand[]",
+              "value": "latest_charge",
+              "disabled": false,
+              "type": "default",
+              "description": ""
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "STRIPE_KEY",
+      "value": "sk_test_your_key",
+      "type": "default"
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "password",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "username",
+        "value": "{{STRIPE_KEY}}",
+        "type": "string"
+      }
+    ]
+  }
+}

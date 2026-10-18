@@ -1,0 +1,65 @@
+name: Merchant Payment Service QA
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COURSE_API_BASE_URL: http://127.0.0.1:3000
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_PUBLISHABLE_KEY: pk_test_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check course tests
+        run: npm run typecheck:course
+
+      - name: Start the Merchant Payment Service
+        run: docker compose --file course-project/docker-compose.yml up --detach
+
+      - name: Wait for the API
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose --file course-project/docker-compose.yml logs api
+          exit 1
+
+      - name: Run credential-free API tests
+        run: npm run test:course:ci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: merchant-payment-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Print service logs after failure
+        if: failure()
+        run: docker compose --file course-project/docker-compose.yml logs api
+
+      - name: Stop services
+        if: always()
+        run: docker compose --file course-project/docker-compose.yml down --volumes

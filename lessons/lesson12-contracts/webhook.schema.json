@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stripe Webhook Event — payment_intent.succeeded",
+  "description": "Contract schema for Stripe webhook payload. Validates structure, not business logic.",
+  "type": "object",
+  "required": ["id", "type", "created", "data"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^evt_",
+      "description": "Event ID, always starts with evt_"
+    },
+    "object": {
+      "type": "string",
+      "const": "event"
+    },
+    "type": {
+      "type": "string",
+      "const": "payment_intent.succeeded",
+      "description": "Stripe event type covered by this contract"
+    },
+    "created": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Unix timestamp of event creation"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "api_version": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "required": ["object"],
+      "properties": {
+        "object": {
+          "type": "object",
+          "required": ["id", "object", "status", "amount", "currency"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^pi_",
+              "description": "PaymentIntent ID, always starts with pi_"
+            },
+            "object": {
+              "type": "string",
+              "const": "payment_intent"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "requires_payment_method",
+                "requires_confirmation",
+                "requires_action",
+                "processing",
+                "requires_capture",
+                "canceled",
+                "succeeded"
+              ]
+            },
+            "amount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Amount in smallest currency unit (cents)"
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[a-z]{3}$",
+              "description": "Three-letter ISO currency code, lowercase"
+            },
+            "payment_method": {
+              "type": ["string", "null"],
+              "description": "PaymentMethod ID or null"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Arbitrary key-value metadata"
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/error/v1/payment_intents"
+  },
+  "response": {
+    "status": 503,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "error": {
+        "type": "api_error",
+        "message": "The server is currently unable to handle the request."
+      }
+    }
+  }
+}

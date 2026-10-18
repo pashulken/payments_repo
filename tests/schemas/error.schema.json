@@ -1,0 +1,23 @@
+{
+  "$id": "https://qa.local/schemas/error.schema.json",
+  "type": "object",
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "required": ["type", "message"],
+      "properties": {
+        "type": {
+          "enum": [
+            "validation_error",
+            "invalid_state",
+            "invalid_request",
+            "not_found",
+            "server_error"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
