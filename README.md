@@ -1,180 +1,113 @@
-# Payment Systems Testing — Course Repository
+# Merchant Payment Service QA
 
-Course materials for QA Automation Engineers.
+Playwright and TypeScript tests for the Docker-based Merchant Payment Service. The tests treat the service as a black box and use [`course-project/API.md`](course-project/API.md) and [`course-project/openapi.yaml`](course-project/openapi.yaml) as the contract.
 
-Lessons and their supporting materials are added incrementally, one at a
-time, as we actually get to them in class — so what's in the repo always
-runs, instead of being full of half-finished placeholders.
+## Test coverage
 
-## Structure
+- 24 core API tests for health, configuration, listing, validation, error handling, and webhooks.
+- 16 Stripe test-mode API tests for successful and declined payments, 3D Secure, idempotency, capture, and refunds.
+- 2 browser tests for successful checkout and card-decline handling.
+- 7 JSON Schemas for response validation.
+- Page Objects for the checkout, success, and payments pages.
 
-```
-├── lessons/                        # code, tests, homework, test data — one folder per lesson
-│   ├── lesson01-failure-points/    # 4 payment failure zones + unit tests
-│   ├── lesson04-wiremock/          # WireMock stubs + integration tests for PspClient
-│   ├── lesson06-webhooks/
-│   │   └── webhook-template/       # Express + TypeScript webhook handler (separate npm project)
-│   ├── lesson08-refunds/           # refund-with-bugs.ts (homework)
-│   ├── lesson09-antifraud/         # velocity-buggy.ts (homework)
-│   ├── lesson10-security/
-│   │   └── test-data/              # logs, API responses, SSL scan with PCI DSS violations to spot
-│   ├── lesson11-test-architecture/ # test-buggy.ts (homework)
-│   └── lesson12-contracts/         # JSON Schema contract tests for Stripe webhooks
-│
-├── demo-scripts/                   # in-class demos: curl scripts + Postman collections
-│
-├── .github/workflows/              # CI: unit, contract, WireMock integration, live contract tests
-├── .env.example                    # copy to .env and fill in your keys
-└── README.md
-```
+The current suite contains 42 tests. The latest full run finished with 37 passed and 5 failed. Those failures map to four application defects; two tests expose the same `client_secret` leak. See [`test-results.md`](test-results.md) and [`bug-reports/`](bug-reports/) for the evidence.
 
-## Lessons
+## Project files
 
-| # | Topic | Code / homework | Demo |
-|---|---|---|---|
-| 1 | Failure points | `lessons/lesson01-failure-points/` | — |
-| 2 | Stripe API | — | `demo-scripts/lesson02-stripe-api.postman_collection.json` |
-| 4 | WireMock | `lessons/lesson04-wiremock/` | `demo-scripts/lesson04-wiremock-stubs.sh` |
-| 5 | Partial capture, alternative payment methods | — | `demo-scripts/lesson05-partial-capture.sh`<br>`demo-scripts/lesson05-alternative-payment-methods.sh` |
-| 6 | Webhooks | `lessons/lesson06-webhooks/webhook-template/` | `demo-scripts/lesson06-webhook-setup.sh` |
-| 7 | 3D Secure | — | `demo-scripts/lesson07-3ds.postman_collection.json` |
-| 8 | Refunds | `lessons/lesson08-refunds/` | — |
-| 9 | Antifraud | `lessons/lesson09-antifraud/` | `demo-scripts/lesson09-antifraud.postman_collection.json` |
-| 10 | Security / PCI DSS | `lessons/lesson10-security/test-data/` | — |
-| 11 | Test architecture | `lessons/lesson11-test-architecture/` | — |
-| 12 | Contract testing | `lessons/lesson12-contracts/` | — |
-
-## Getting started
-
-```bash
-# Clone the repo
-git clone <url>
-cd payment-testing-course
-
-# Node 20+ (see .nvmrc)
-nvm use
-
-# Install dependencies
-npm install
-
-# Keys for the tests — .env is gitignored, never commit real keys
-cp .env.example .env
-# then edit .env: STRIPE_TEST_KEY=sk_test_..., WIREMOCK_URL=http://localhost:8080
-
-# Key for the curl demo scripts
-export STRIPE_KEY=sk_test_YOUR_KEY
+```text
+course-project/          Docker Compose service and API documentation
+tests/api/               Core and Stripe API tests
+tests/e2e/               Browser tests
+tests/helpers/           API, contract, type, and webhook helpers
+tests/pages/             Playwright Page Objects
+tests/schemas/           JSON Schemas
+bug-reports/             Confirmed defect reports
+.github/workflows/       GitHub Actions workflows
+test-strategy.md         Test approach and risk coverage
+test-results.md          Latest execution results
+RUNBOOK.md               Detailed setup and handoff guide
 ```
 
-## Running tests
+## Requirements
 
-Test type is defined by the file name suffix:
+- Docker Desktop using Linux containers.
+- Node.js 20 or newer.
+- Stripe secret and publishable keys from test mode.
 
-| Command | Files | Needs |
-|---|---|---|
-| `npm run test:unit` | `*.unit.test.ts` | nothing |
-| `npm run test:contract` | `*.contract.test.ts` | nothing |
-| `npm run test:integration` | `*.integration.test.ts` | WireMock + `WIREMOCK_URL` |
-| `npm run test:contract:live` | `*.contract-live.test.ts` | `STRIPE_TEST_KEY` (real Stripe test mode) |
-| `npm test` | all of the above | — |
+Use keys beginning with `sk_test_` and `pk_test_`. Keep them in `course-project/.env`; Git ignores that file.
 
-Suites that need `WIREMOCK_URL` or `STRIPE_TEST_KEY` are **skipped** when the variable is not set.
+## Setup
 
-Start WireMock for integration tests:
-
-```bash
-docker run -d --name wiremock -p 8080:8080 wiremock/wiremock:3.3.1
-```
-
-The webhook template is a separate project with its own dependencies:
-
-```bash
-cd lessons/lesson06-webhooks/webhook-template
-npm install
-npm test
-```
-
-## Stripe test cards
-
-| Card | Scenario |
-|------|----------|
-| `pm_card_visa` | Successful payment |
-| `pm_card_chargeDeclined` | Decline |
-| `pm_card_chargeDeclinedInsufficientFunds` | Insufficient funds |
-| `pm_card_threeDSecureOptional` | 3DS frictionless |
-| `pm_card_threeDSecure2Required` | 3DS challenge |
-| `pm_card_radarBlock` | Stripe Radar block |
-| `pm_card_riskLevelHighest` | High risk score |
-
-## Code homework
-
-### Lesson 6 — `lessons/lesson06-webhooks/webhook-template/`
-Implement a webhook handler with signature verification and idempotent processing.
-
-### Lesson 8 — `lessons/lesson08-refunds/refund-with-bugs.ts`
-A refund function with intentional bugs. Find them, write tests and fix them.
-
-### Lesson 9 — `lessons/lesson09-antifraud/velocity-buggy.ts`
-Find at least 4 problems in the `checkVelocity` function. Write tests and fix them.
-
-### Lesson 10 — `lessons/lesson10-security/test-data/`
-Find the PCI DSS violations in the logs, API responses and SSL scan result.
-
-### Lesson 11 — `lessons/lesson11-test-architecture/test-buggy.ts`
-Find at least 5 architectural problems in the test file. Refactor it.
-
-> Homework files are **intentionally broken** — TypeScript errors in them are expected.
-
-## Roadmap (planned, not added yet)
-
-- `lessons/lesson13-reconciliation/test-data/` — CSVs for a reconciliation exercise
-
-## Course project
-
-By the end of the course you'll get a demo service with intentional bugs
-(Docker Compose). The task: find the bugs, write tests, and prepare bug
-reports.
-
-## Merchant Payment Service QA project
-
-The course-project automation is implemented with Playwright Test and TypeScript under `tests/`.
-It contains credential-free API validation, Stripe sandbox payment flows, JSON Schema contract
-checks, and a small Page Object Model browser suite.
-
-### Install and start
+Run these commands from the repository root in PowerShell:
 
 ```powershell
 npm ci
+npx playwright install chromium
 Copy-Item course-project/.env.example course-project/.env
-# Add Stripe TEST keys to course-project/.env, then:
-docker compose --file course-project/docker-compose.yml up -d
 ```
 
-Only `sk_test_...` and `pk_test_...` credentials are suitable. The `.env` file is ignored and
-must never be committed. Check availability at `http://localhost:3000/api/health`.
-
-### Run tests
+Open `course-project/.env` and replace the placeholders with your Stripe test keys. Then start the service:
 
 ```powershell
-# Credential-free API checks; suitable for placeholder keys and CI
-npm run test:course:ci
+docker compose --env-file course-project/.env --file course-project/docker-compose.yml up -d
+docker compose --env-file course-project/.env --file course-project/docker-compose.yml ps
+Invoke-RestMethod http://127.0.0.1:3000/api/health
+```
 
-# Full API suite against Stripe test mode
-$env:RUN_STRIPE_TESTS = 'true'
-npm run test:course:api
+The health response should contain `"status":"ok"` and `"db":"connected"`. Open the checkout page at `http://localhost:3000/checkout`.
 
-# Browser tests (install Chromium once, then use Stripe test mode)
-npx playwright install chromium
-npm run test:course:e2e
+## Run the tests
 
-# Type-check and open the most recent HTML report
+Type-check the Playwright project:
+
+```powershell
 npm run typecheck:course
+```
+
+Run the 24 tests that do not create Stripe objects:
+
+```powershell
+npm run test:course:ci
+```
+
+Run all 42 API and browser tests with Stripe test mode enabled:
+
+```powershell
+$env:RUN_STRIPE_TESTS = 'true'
+npm run test:course
+```
+
+The full suite returns a non-zero exit code while the confirmed service defects remain open. Do not weaken those assertions to obtain a green result.
+
+Open the HTML report:
+
+```powershell
 npm run test:course:report
 ```
 
-Set `COURSE_API_BASE_URL` to override `http://127.0.0.1:3000`. Financial tests are tagged
-`@stripe`; the local `course-project` version `1.0` has no documented WireMock routing option,
-so they are never represented as mocked Stripe coverage. CI runs the credential-free API suite
-on every push and pull request and uploads the Playwright report.
+Set `COURSE_API_BASE_URL` if the service uses a URL other than `http://127.0.0.1:3000`.
 
-Project evidence and scope are documented in `test-strategy.md`, `test-results.md`, and
-`bug-reports/`. A step-by-step runner handoff is available in `RUNBOOK.md`.
+## Confirmed defects
+
+The test run confirmed four service defects:
+
+- Payment read endpoints expose Stripe `client_secret` values.
+- Retrying with one idempotency key creates duplicate payments.
+- A capture request above the authorized amount succeeds.
+- A partial refund marks the payment fully refunded and blocks the remaining refund.
+
+The fifth report covers a contradiction in the documented error type for malformed webhook JSON. Each report includes reproduction steps, expected and observed results, evidence, and severity reasoning.
+
+## Continuous integration
+
+GitHub Actions runs TypeScript validation and the 24 credential-free API tests on pushes and pull requests. Stripe-backed tests stay out of CI because the workflow has no Stripe account credentials.
+
+## Stop the service
+
+```powershell
+docker compose --env-file course-project/.env --file course-project/docker-compose.yml down
+```
+
+This command keeps the PostgreSQL volume. Use `down -v` only when you want to delete the local payment data.
+
+For a step-by-step handoff, troubleshooting notes, and sign-off checks, see [`RUNBOOK.md`](RUNBOOK.md).
