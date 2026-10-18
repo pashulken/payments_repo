@@ -22,7 +22,7 @@ tests/helpers/           API, contract, type, and webhook helpers
 tests/pages/             Playwright Page Objects
 tests/schemas/           JSON Schemas
 bug-reports/             Confirmed defect reports
-.github/workflows/       GitHub Actions workflows
+.github/workflows/       GitHub Actions workflow
 test-strategy.md         Test approach and risk coverage
 test-results.md          Latest execution results
 RUNBOOK.md               Detailed setup and handoff guide

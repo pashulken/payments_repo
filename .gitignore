@@ -1,12 +1,7 @@
 node_modules/
-dist/
 .env
 *.log
 .DS_Store
-coverage/
-CONTEXT.md
 playwright-report/
 test-results/
-.tmp-jest/
-.docx-work/
 skill-observations/

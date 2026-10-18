@@ -19,9 +19,7 @@ The complete 42-test Playwright suite was executed against the running Docker se
 | Complete API suite | Final consolidated API result: 35 passed, 5 failed out of 40 |
 | Stripe sandbox API tests | 12 passed, 4 failed out of 16 |
 | Browser E2E tests | Passed: 2/2 |
-| Existing lesson unit tests | Passed: 34 |
-| Existing lesson contract tests | Passed: 14 |
-| Existing lesson integration tests | Skipped as designed: 14 (WireMock URL not configured) |
+| GitHub Actions | Passed: Merchant Payment Service QA workflow |
 
 ## Confirmed defects
 
@@ -38,4 +36,3 @@ The four application defects account for five failing API tests because `BUG-001
 - Stripe Dashboard-to-database reconciliation was not independently performed.
 - Duplicate webhook delivery was not verified at the database level.
 - The automated browser suite does not complete an interactive 3D Secure challenge.
-- GitHub Actions cannot be confirmed until the repository is pushed and the workflow runs remotely.
