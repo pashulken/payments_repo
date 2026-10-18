@@ -1,23 +1,23 @@
-# BUG-005 — Malformed webhook error type is inconsistent in the API documentation
+# BUG-005 - Malformed webhook error type is inconsistent in the API documentation
 
-**Summary:** The general API error table classifies malformed JSON as `invalid_request`, while the webhook endpoint table classifies the same malformed body as `validation_error`.
+**Summary:** The common error table classifies malformed JSON as `invalid_request`. The webhook response table calls the same error `validation_error`.
 
 **Severity:** Low
 
-**Preconditions:** Access to the supplied `course-project/API.md` contract.
+**Pre-conditions:** Access to `course-project/API.md` and a running Merchant Payment Service 1.0 instance.
 
 **Steps to Reproduce:**
 
 1. Read the common error table in `API.md`.
 2. Note that malformed JSON is documented as HTTP 400 `invalid_request`.
 3. Read the response table for `POST /api/webhooks`.
-4. Note that `Invalid JSON body` is documented as HTTP 400 `validation_error`.
-5. Send a correctly signed malformed JSON payload such as `{bad` to `/api/webhooks`.
+4. Note that `Invalid JSON body` uses HTTP 400 `validation_error`.
+5. Send a malformed JSON payload such as `{bad` with a valid signature to `/api/webhooks`.
 
-**Expected Result:** One unambiguous error type is documented consistently for malformed webhook JSON.
+**Expected Result:** Both sections document the same error type for malformed webhook JSON.
 
-**Actual Result:** The two contract sections disagree. The running service follows the endpoint-specific table and returns `validation_error`.
+**Actual Result:** The two sections use different error types. The service follows the webhook response table and returns `validation_error`.
 
-**Evidence:** `API.md` common errors and `POST /api/webhooks` responses contain the conflicting classifications; the automated webhook test confirms the runtime response.
+**Evidence:** The common errors section and the `POST /api/webhooks` response table contain different classifications. The webhook test confirms that the service returns `validation_error`.
 
-**Severity Justification:** No payment state is corrupted, but consumers and automated contract tests can implement the wrong expectation. The endpoint-specific behavior can be inferred, so the impact is limited to integration clarity and maintenance.
+**Severity Justification:** The issue does not change payment data, but API clients and contract tests may use the wrong error type. Teams must inspect both sections or test the service to learn which value it returns.

@@ -1,10 +1,10 @@
-# BUG-004 — Partial refund marks payment fully refunded
+# BUG-004 - Partial refund marks payment fully refunded
 
-**Summary:** A successful partial refund immediately changes the payment status to `refunded`, preventing refund of the remaining paid balance.
+**Summary:** A partial refund changes the payment status to `refunded` and blocks a refund of the remaining balance.
 
 **Severity:** High
 
-**Preconditions:**
+**Pre-conditions:**
 
 - Merchant Payment Service 1.0 is running with valid Stripe test-mode credentials.
 - A captured payment for 7,001 cents exists in `succeeded` status.
@@ -16,10 +16,10 @@
 3. Retrieve the payment.
 4. Attempt to refund the remaining 5,001 cents.
 
-**Expected Result:** After step 3 the payment remains `succeeded`, because only 2,000 of 7,001 cents has been refunded. Step 4 succeeds, after which the payment becomes `refunded`.
+**Expected Result:** After step 3, the payment remains `succeeded` because 5,001 cents still need to be refunded. Step 4 succeeds and changes the payment to `refunded`.
 
-**Actual Result:** After the first partial refund, the payment is already `refunded`. The remaining refund returns HTTP 400 `invalid_state` with `Payment cannot be refunded (status: refunded)`.
+**Actual Result:** The first partial refund changes the payment to `refunded`. The second refund returns HTTP 400 `invalid_state` with `Payment cannot be refunded (status: refunded)`.
 
-**Evidence:** The automated partial-refund test received a valid 2,000-cent refund, then observed `refunded` instead of `succeeded`; a subsequent refund of the exact 5,001-cent balance was rejected.
+**Evidence:** The partial-refund test received a 2,000-cent refund and then found the payment in `refunded` instead of `succeeded`. The API rejected the next refund for the remaining 5,001 cents.
 
-**Severity Justification:** The service records an incorrect financial state and blocks return of the remaining customer funds through the documented API. This creates customer-support, reconciliation, and regulatory risk.
+**Severity Justification:** The service stores the wrong financial state and blocks the documented way to return the remaining customer funds. Support teams must handle the missing refund outside the normal API flow, and reconciliation records will not match the intended refund amount.
