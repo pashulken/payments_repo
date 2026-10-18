@@ -1,5 +1,6 @@
 import { expect, type APIRequestContext, type APIResponse } from '@playwright/test';
 
+import { expectSchema } from './contract';
 import type { ApiError, CapturedPayment, CreatedPayment, Payment, PaymentList, Refund } from './types';
 
 export interface CreatePaymentInput {
@@ -53,6 +54,7 @@ export async function expectApiError(
   type: string,
 ): Promise<ApiError> {
   const body = await expectJson<ApiError>(response, status);
+  expectSchema('error', body);
   expect(body.error.type).toBe(type);
   expect(body.error.message).toEqual(expect.any(String));
   expect(body.error.message.length).toBeGreaterThan(0);
@@ -69,7 +71,9 @@ export async function createSuccessfulPayment(
     customer_email: `qa+${Date.now()}@example.com`,
     ...overrides,
   });
-  return expectJson<CreatedPayment>(response, 201);
+  const payment = await expectJson<CreatedPayment>(response, 201);
+  expectSchema('createdPayment', payment);
+  return payment;
 }
 
 export type { ApiError, CapturedPayment, CreatedPayment, Payment, PaymentList, Refund };

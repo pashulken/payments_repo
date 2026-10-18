@@ -30,7 +30,7 @@ Payment creation receives high priority because incorrect behavior can cause dup
 
 The tests cover individual payment retrieval, payment lists, default pagination, page-size limits, status filtering, result ordering, and response schemas.
 
-Read endpoints must return consistent payment data without exposing `client_secret`.
+Payment responses must return consistent data without exposing `client_secret` outside payment creation.
 
 ### Capture
 
@@ -78,9 +78,9 @@ These tests cover behavior that isolated mocks cannot prove, including Stripe de
 
 ### Contract testing
 
-AJV validates API responses against seven reusable JSON Schemas derived from the supplied OpenAPI specification.
+AJV validates API responses against 10 reusable JSON Schemas derived from the supplied OpenAPI specification.
 
-AJV flags missing fields, unexpected sensitive fields, incorrect data types, and response-shape changes.
+The schemas reject missing fields, undocumented fields, incorrect data types, and response-shape changes. Contract assertions remain soft so each test can continue checking the related payment behavior after reporting a structure violation.
 
 ### End-to-end testing
 
@@ -157,14 +157,14 @@ The suite does not cover concurrent requests, reuse of one key with a different 
 | Risk | Test coverage |
 |---|---|
 | Duplicate charging | Repeating a payment request with the same idempotency key must return the original local payment and Stripe PaymentIntent. |
-| Sensitive data exposure | Configuration responses must not contain a Stripe secret key. Payment read responses must not contain `client_secret`. |
+| Sensitive data exposure | Configuration responses must not contain a Stripe secret key. Payment responses must not contain `client_secret` outside creation. |
 | Incorrect amounts | Tests cover valid amounts, Stripe's minimum, invalid values, partial capture, full refund, partial refund, over-capture, and over-refund. |
 | Failed payment handling | Generic decline and insufficient-funds cards must return HTTP 402 with Stripe card error details. |
 | Incorrect capture state | Tests cover manual authorization, full capture, partial capture, repeated capture, and capture above the authorization. |
 | Incorrect refund state | Tests cover full refund, partial refund, remaining balance, over-refund, and refund before capture. |
 | Incorrect payment status | Retrieval after creation, capture, partial refund, and full refund checks the stored payment status. |
 | Webhook input errors | Tests reject malformed JSON and missing event types. A signed unsupported event must receive an acknowledgement. |
-| Contract changes | AJV validates representative health, payment, list, capture, refund, and error responses. |
+| Contract changes | AJV validates health, configuration, payment, list, capture, refund, webhook acknowledgement, and error responses. |
 | Checkout failure | Browser tests verify successful payment history and declined-card messaging. |
 
 ## Out of Scope

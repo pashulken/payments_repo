@@ -42,7 +42,7 @@ jobs:
           docker compose --file course-project/docker-compose.yml logs api
           exit 1
 
-      - name: Run credential-free API tests
+      - name: Run credential-free API contract tests
         run: npm run test:course:ci
 
       - name: Upload Playwright report

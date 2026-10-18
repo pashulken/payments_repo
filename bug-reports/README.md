@@ -4,7 +4,7 @@ The following defects were reproduced against `ghcr.io/yyushchenko/merchant-api:
 
 | ID | Severity | Summary | Automated coverage |
 |---|---|---|---|
-| [BUG-001](BUG-001-client-secret-returned-by-get-payment.md) | High | Payment read endpoints expose `client_secret` | `core.spec.ts` list contract and `stripe.spec.ts` persistence |
+| [BUG-001](BUG-001-client-secret-returned-by-get-payment.md) | High | Payment responses expose `client_secret` outside creation | `core.spec.ts` list contracts and `stripe.spec.ts` payment responses |
 | [BUG-002](BUG-002-idempotency-key-creates-duplicate-payments.md) | High | Retrying with one idempotency key creates duplicate payments | `stripe.spec.ts` - idempotency retry |
 | [BUG-003](BUG-003-over-capture-is-accepted.md) | High | Capture above the authorized amount succeeds | `stripe.spec.ts` - over-capture |
 | [BUG-004](BUG-004-partial-refund-marks-payment-fully-refunded.md) | High | Partial refund marks the payment fully refunded | `stripe.spec.ts` - partial and remaining refund |

@@ -11,7 +11,7 @@ import { signWebhook } from '../helpers/webhook';
 
 const missingPaymentId = '00000000-0000-4000-8000-000000000000';
 
-test.describe('Merchant Payment API — credential-free checks', () => {
+test.describe('Merchant Payment API — credential-free checks', { tag: '@contract' }, () => {
   test('reports healthy service and database state', async ({ request }) => {
     const response = await request.get('/api/health');
     const body = await expectJson<{ status: string; db: string; timestamp: string }>(response, 200);
@@ -24,6 +24,7 @@ test.describe('Merchant Payment API — credential-free checks', () => {
     const response = await request.get('/api/config');
     const body = await expectJson<{ publishableKey: string }>(response, 200);
 
+    expectSchema('config', body);
     expect(body.publishableKey).toMatch(/^pk_test_/);
     expect(JSON.stringify(body)).not.toContain('sk_test_');
   });
@@ -46,6 +47,7 @@ test.describe('Merchant Payment API — credential-free checks', () => {
       200,
     );
 
+    expectSchema('paymentList', body);
     expect(body.page).toBe(1);
     expect(body.limit).toBe(20);
   });
@@ -56,6 +58,7 @@ test.describe('Merchant Payment API — credential-free checks', () => {
       200,
     );
 
+    expectSchema('paymentList', body);
     expect(body.page).toBe(1);
     expect(body.limit).toBe(100);
     expect(body.payments.length).toBeLessThanOrEqual(100);
@@ -67,6 +70,7 @@ test.describe('Merchant Payment API — credential-free checks', () => {
       200,
     );
 
+    expectSchema('paymentList', body);
     expect(body.payments.every((payment) => payment.status === 'failed')).toBe(true);
   });
 
@@ -125,7 +129,6 @@ test.describe('Merchant Payment API — credential-free checks', () => {
         'validation_error',
       );
 
-      expectSchema('error', error);
       expect(error.error.message).toMatch(scenario.message);
     });
   }
@@ -137,54 +140,47 @@ test.describe('Merchant Payment API — credential-free checks', () => {
     });
     const error = await expectApiError(response, 400, 'invalid_request');
 
-    expectSchema('error', error);
     expect(error.error.message).toMatch(/invalid json/i);
   });
 
   test('rejects an invalid payment ID on retrieval', async ({ request }) => {
-    const error = await expectApiError(await new PaymentApi(request).get('not-a-uuid'), 400, 'validation_error');
-    expectSchema('error', error);
+    await expectApiError(await new PaymentApi(request).get('not-a-uuid'), 400, 'validation_error');
   });
 
   test('returns not found for an unknown payment', async ({ request }) => {
-    const error = await expectApiError(await new PaymentApi(request).get(missingPaymentId), 404, 'not_found');
-    expectSchema('error', error);
+    await expectApiError(await new PaymentApi(request).get(missingPaymentId), 404, 'not_found');
   });
 
   test('rejects an invalid payment ID on capture', async ({ request }) => {
-    const error = await expectApiError(
+    await expectApiError(
       await new PaymentApi(request).capture('not-a-uuid'),
       400,
       'validation_error',
     );
-    expectSchema('error', error);
   });
 
   test('returns not found when capturing an unknown payment', async ({ request }) => {
-    const error = await expectApiError(
+    await expectApiError(
       await new PaymentApi(request).capture(missingPaymentId),
       404,
       'not_found',
     );
-    expectSchema('error', error);
   });
 
   test('rejects an invalid payment ID on refund', async ({ request }) => {
-    const error = await expectApiError(
+    await expectApiError(
       await new PaymentApi(request).refund('not-a-uuid'),
       400,
       'validation_error',
     );
-    expectSchema('error', error);
   });
 
   test('returns not found when refunding an unknown payment', async ({ request }) => {
-    const error = await expectApiError(
+    await expectApiError(
       await new PaymentApi(request).refund(missingPaymentId),
       404,
       'not_found',
     );
-    expectSchema('error', error);
   });
 
   test('rejects a webhook without an event type', async ({ request }) => {
@@ -196,7 +192,6 @@ test.describe('Merchant Payment API — credential-free checks', () => {
     });
     const error = await expectApiError(response, 400, 'validation_error');
 
-    expectSchema('error', error);
     expect(error.error.message).toMatch(/event type/i);
   });
 
@@ -209,7 +204,6 @@ test.describe('Merchant Payment API — credential-free checks', () => {
     });
     const error = await expectApiError(response, 400, 'validation_error');
 
-    expectSchema('error', error);
     expect(error.error.message).toMatch(/invalid json/i);
   });
 
@@ -229,6 +223,7 @@ test.describe('Merchant Payment API — credential-free checks', () => {
     });
     const body = await expectJson<{ received: boolean }>(response, 200);
 
+    expectSchema('webhookAck', body);
     expect(body).toEqual({ received: true });
   });
 });

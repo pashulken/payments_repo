@@ -1,13 +1,41 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://qa.local/schemas/created-payment.schema.json",
-  "allOf": [
-    { "$ref": "https://qa.local/schemas/payment.schema.json" },
-    {
-      "type": "object",
-      "required": ["client_secret"],
-      "properties": {
-        "client_secret": { "type": "string", "pattern": "^pi_.*_secret_" }
-      }
-    }
-  ]
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "stripe_pi_id",
+    "amount",
+    "currency",
+    "status",
+    "capture_method",
+    "created_at",
+    "updated_at",
+    "client_secret"
+  ],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "stripe_pi_id": { "type": "string", "pattern": "^pi_" },
+    "amount": { "type": "integer", "minimum": 1 },
+    "currency": { "const": "usd" },
+    "status": {
+      "enum": [
+        "succeeded",
+        "requires_capture",
+        "requires_action",
+        "failed",
+        "canceled",
+        "refunded"
+      ]
+    },
+    "capture_method": { "enum": ["automatic", "manual"] },
+    "customer_email": { "type": ["string", "null"] },
+    "description": { "type": ["string", "null"] },
+    "metadata": { "type": "object", "additionalProperties": true },
+    "idempotency_key": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "client_secret": { "type": "string", "pattern": "^pi_.*_secret_" }
+  }
 }

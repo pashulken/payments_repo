@@ -1,13 +1,16 @@
 import { expect } from '@playwright/test';
 import Ajv, { type AnySchema, type ValidateFunction } from 'ajv';
 
+import cardErrorSchema from '../schemas/card-error.schema.json';
 import capturedPaymentSchema from '../schemas/captured-payment.schema.json';
+import configSchema from '../schemas/config.schema.json';
 import createdPaymentSchema from '../schemas/created-payment.schema.json';
 import errorSchema from '../schemas/error.schema.json';
 import healthSchema from '../schemas/health.schema.json';
 import paymentListSchema from '../schemas/payment-list.schema.json';
 import paymentSchema from '../schemas/payment.schema.json';
 import refundSchema from '../schemas/refund.schema.json';
+import webhookAckSchema from '../schemas/webhook-ack.schema.json';
 
 export type SchemaName =
   | 'payment'
@@ -16,7 +19,10 @@ export type SchemaName =
   | 'paymentList'
   | 'refund'
   | 'error'
-  | 'health';
+  | 'cardError'
+  | 'health'
+  | 'config'
+  | 'webhookAck';
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 ajv.addFormat('uuid', /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
@@ -29,7 +35,10 @@ const schemas: Record<SchemaName, AnySchema> = {
   paymentList: paymentListSchema,
   refund: refundSchema,
   error: errorSchema,
+  cardError: cardErrorSchema,
   health: healthSchema,
+  config: configSchema,
+  webhookAck: webhookAckSchema,
 };
 
 for (const schema of Object.values(schemas)) {
@@ -47,5 +56,8 @@ export function expectSchema(name: SchemaName, body: unknown): void {
   }
 
   const valid = validate(body);
-  expect(valid, ajv.errorsText(validate.errors, { separator: '\n' })).toBe(true);
+  const errors = validate.errors
+    ?.map((error) => `${error.instancePath || '/'} ${error.message} ${JSON.stringify(error.params)}`)
+    .join('\n');
+  expect.soft(valid, errors).toBe(true);
 }

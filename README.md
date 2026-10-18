@@ -7,10 +7,10 @@ Playwright and TypeScript tests for the Docker-based Merchant Payment Service. T
 - 24 core API tests for health, configuration, listing, validation, error handling, and webhooks.
 - 16 Stripe test-mode API tests for successful and declined payments, 3D Secure, idempotency, capture, and refunds.
 - 2 browser tests for successful checkout and card-decline handling.
-- 7 JSON Schemas for response validation.
+- 10 strict JSON Schemas for response validation.
 - Page Objects for the checkout, success, and payments pages.
 
-The current suite contains 42 tests. The latest full run finished with 37 passed and 5 failed. Those failures map to four application defects; two tests expose the same `client_secret` leak. See [`test-results.md`](test-results.md) and [`bug-reports/`](bug-reports/) for the evidence.
+The current suite contains 42 tests. The latest full run against a retained database finished with 30 passed and 12 failed. The strict response contracts surface the same `client_secret` leak across each affected list, retrieval, capture, and post-refund response. The failures still map to four application defects. See [`test-results.md`](test-results.md) for the execution details and [`bug-reports/`](bug-reports/) for the defect reports.
 
 ## Project files
 
@@ -70,6 +70,12 @@ Run the 24 tests that do not create Stripe objects:
 npm run test:course:ci
 ```
 
+Run the API contract tests. Without `RUN_STRIPE_TESTS=true`, Playwright runs the 24 credential-free contract tests and skips the 16 Stripe-backed contract tests:
+
+```powershell
+npm run test:course:contract
+```
+
 Run all 42 API and browser tests with Stripe test mode enabled:
 
 ```powershell
@@ -91,12 +97,12 @@ Set `COURSE_API_BASE_URL` if the service uses a URL other than `http://127.0.0.1
 
 The test run confirmed four service defects:
 
-- Payment read endpoints expose Stripe `client_secret` values.
+- Payment responses expose Stripe `client_secret` values outside payment creation.
 - Retrying with one idempotency key creates duplicate payments.
 - A capture request above the authorized amount succeeds.
 - A partial refund marks the payment fully refunded and blocks the remaining refund.
 
-The fifth report covers a contradiction in the documented error type for malformed webhook JSON. Each report includes reproduction steps, expected and observed results, evidence, and severity reasoning.
+The fifth report covers a contradiction in the documented error type for malformed webhook JSON. Each report includes a summary, severity, pre-conditions, steps to reproduce, expected result, actual result, and severity justification.
 
 ## Continuous integration
 

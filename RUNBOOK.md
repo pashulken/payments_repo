@@ -54,6 +54,14 @@ docker compose --file course-project/docker-compose.yml config --quiet
 
 Expected result: TypeScript succeeds, 42 tests are listed, and Compose reports no configuration error.
 
+The API suites validate responses against 10 strict JSON Schemas. Run them directly with:
+
+```powershell
+npm run test:course:contract
+```
+
+Set `RUN_STRIPE_TESTS=true` first when the contract run must include Stripe-backed payment, capture, and refund responses.
+
 ## 4. Start and verify the application
 
 ```powershell
@@ -129,7 +137,7 @@ For a possible defect:
 2. Preserve the exact request, status, sanitized response, relevant service logs, and payment ID.
 3. Compare the result with the documented requirement.
 4. Check the stored payment/refund state when database evidence is relevant.
-5. Add `bug-reports/BUG-NNN-short-title.md` using the required summary, severity, preconditions, steps, expected result, actual result, evidence, and severity justification.
+5. Add `bug-reports/BUG-NNN-short-title.md` using the required summary, severity, pre-conditions, steps to reproduce, expected result, actual result, and severity justification.
 
 Do not create a bug report for an environment failure, and do not change a documented expectation merely to make a failing test pass.
 

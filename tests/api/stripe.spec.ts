@@ -15,7 +15,7 @@ import {
   type Refund,
 } from '../helpers/payment-api';
 
-test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
+test.describe('@stripe Merchant Payment API — Stripe sandbox flows', { tag: '@contract' }, () => {
   test.skip(
     process.env.RUN_STRIPE_TESTS !== 'true',
     'Set RUN_STRIPE_TESTS=true and start the service with Stripe test keys.',
@@ -67,7 +67,6 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
       'invalid_request',
     );
 
-    expectSchema('error', error);
     expect(error.error.message).toMatch(/at least.*0\.50/i);
   });
 
@@ -103,6 +102,7 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
       });
       const error = await expectJson<ApiError>(response, 402);
 
+      expectSchema('cardError', error);
       expect(error.error).toMatchObject({
         type: 'card_error',
         code: 'card_declined',
@@ -123,7 +123,6 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
       'invalid_request',
     );
 
-    expectSchema('error', error);
     expect(error.error.message).toMatch(/invalid email/i);
   });
 
@@ -139,6 +138,8 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
     const first = await expectJson<CreatedPayment>(await api.create(payload), 201);
     const retry = await expectJson<CreatedPayment>(await api.create(payload), 201);
 
+    expectSchema('createdPayment', first);
+    expectSchema('createdPayment', retry);
     expect.soft(retry.id).toBe(first.id);
     expect(retry.stripe_pi_id).toBe(first.stripe_pi_id);
     expect(retry.idempotency_key).toBe(idempotencyKey);
@@ -163,10 +164,10 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
       amount: 6_001,
       capture_method: 'manual',
     });
-    await expectJson<CapturedPayment>(await api.capture(authorized.id), 200);
+    const captured = await expectJson<CapturedPayment>(await api.capture(authorized.id), 200);
+    expectSchema('capturedPayment', captured);
 
-    const error = await expectApiError(await api.capture(authorized.id), 400, 'invalid_state');
-    expectSchema('error', error);
+    await expectApiError(await api.capture(authorized.id), 400, 'invalid_state');
   });
 
   test('supports partial capture and releases the remainder', async ({ request }) => {
@@ -190,7 +191,15 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
 
     const response = await api.capture(authorized.id, { amount: 6_004 });
     expect.soft(response.status()).toBe(400);
+    if (response.status() === 200) {
+      const unexpectedCapture = await expectJson<CapturedPayment>(response, 200);
+      expectSchema('capturedPayment', unexpectedCapture);
+    } else {
+      const error = await expectJson<ApiError>(response, 400);
+      expectSchema('error', error);
+    }
     const stored = await expectJson<Payment>(await api.get(authorized.id), 200);
+    expectSchema('payment', stored);
     expect(stored.status).toBe('requires_capture');
     expect(stored.amount).toBe(6_003);
   });
@@ -207,6 +216,7 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
     expect(refund).toMatchObject({ payment_id: payment.id, amount: 7_000, status: 'succeeded' });
 
     const stored = await expectJson<Payment>(await api.get(payment.id), 200);
+    expectSchema('payment', stored);
     expect(stored.status).toBe('refunded');
   });
 
@@ -219,14 +229,24 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
     expect(partial.amount).toBe(2_000);
 
     const afterPartial = await expectJson<Payment>(await api.get(payment.id), 200);
+    expectSchema('payment', afterPartial);
     expect.soft(afterPartial.status).toBe('succeeded');
 
-    const overRefund = await api.refund(payment.id, { amount: 5_002 });
-    expect(overRefund.status()).toBe(400);
+    const overRefund = await expectJson<ApiError>(await api.refund(payment.id, { amount: 5_002 }), 400);
+    expectSchema('error', overRefund);
 
-    const remaining = await expectJson<Refund>(await api.refund(payment.id, { amount: 5_001 }), 200);
-    expect(remaining.amount).toBe(5_001);
+    const remainingResponse = await api.refund(payment.id, { amount: 5_001 });
+    expect.soft(remainingResponse.status()).toBe(200);
+    if (remainingResponse.status() === 200) {
+      const remaining = await expectJson<Refund>(remainingResponse, 200);
+      expectSchema('refund', remaining);
+      expect(remaining.amount).toBe(5_001);
+    } else {
+      const error = await expectJson<ApiError>(remainingResponse, 400);
+      expectSchema('error', error);
+    }
     const fullyRefunded = await expectJson<Payment>(await api.get(payment.id), 200);
+    expectSchema('payment', fullyRefunded);
     expect(fullyRefunded.status).toBe('refunded');
   });
 
@@ -237,7 +257,6 @@ test.describe('@stripe Merchant Payment API — Stripe sandbox flows', () => {
       capture_method: 'manual',
     });
 
-    const error = await expectApiError(await api.refund(authorized.id), 400, 'invalid_state');
-    expectSchema('error', error);
+    await expectApiError(await api.refund(authorized.id), 400, 'invalid_state');
   });
 });

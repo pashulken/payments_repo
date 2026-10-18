@@ -1,10 +1,13 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://qa.local/schemas/error.schema.json",
   "type": "object",
+  "additionalProperties": false,
   "required": ["error"],
   "properties": {
     "error": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["type", "message"],
       "properties": {
         "type": {

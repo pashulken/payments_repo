@@ -8,6 +8,7 @@
     "test:course": "playwright test",
     "test:course:api": "playwright test --project=api",
     "test:course:ci": "playwright test --project=api --grep-invert @stripe",
+    "test:course:contract": "playwright test --project=api --grep @contract",
     "test:course:e2e": "playwright test --project=e2e",
     "test:course:report": "playwright show-report",
     "typecheck:course": "tsc --noEmit"
