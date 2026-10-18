@@ -20,6 +20,4 @@
 
 **Actual Result:** The API returns HTTP 200 and changes the payment to `succeeded`. The stored amount remains 6,003 cents, so the service ignores the requested amount but captures the authorization.
 
-**Evidence:** The over-capture test received HTTP 200 instead of 400. A follow-up request returned `succeeded` instead of `requires_capture`.
-
 **Severity Justification:** The service captures funds after receiving an invalid amount. Clients cannot rely on the documented validation, and they cannot restore the authorization after the state change.

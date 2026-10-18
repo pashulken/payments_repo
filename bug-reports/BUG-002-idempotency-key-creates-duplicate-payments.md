@@ -20,6 +20,4 @@
 
 **Actual Result:** The retry returns a different local `id` and `stripe_pi_id`, even though both responses contain the same idempotency key.
 
-**Evidence:** The idempotency test received two UUIDs and two Stripe PaymentIntent IDs for one key. This report omits the identifiers because the mismatch is the relevant evidence.
-
 **Severity Justification:** Payment clients retry requests after timeouts and network errors. Without idempotency at the application and Stripe request layers, one purchase can charge the customer twice and create reconciliation errors.

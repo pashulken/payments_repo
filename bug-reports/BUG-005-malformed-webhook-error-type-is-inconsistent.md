@@ -18,6 +18,4 @@
 
 **Actual Result:** The two sections use different error types. The service follows the webhook response table and returns `validation_error`.
 
-**Evidence:** The common errors section and the `POST /api/webhooks` response table contain different classifications. The webhook test confirms that the service returns `validation_error`.
-
 **Severity Justification:** The issue does not change payment data, but API clients and contract tests may use the wrong error type. Teams must inspect both sections or test the service to learn which value it returns.

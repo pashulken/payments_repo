@@ -21,6 +21,4 @@
 
 **Actual Result:** Both endpoints return HTTP 200 with a populated `client_secret` property.
 
-**Evidence:** The tests `creates and persists a successful Visa payment` and `lists payments using documented defaults` failed because the read responses contained `client_secret`. This report omits the secret values.
-
 **Severity Justification:** The checkout client uses this credential to complete payment operations. Returning it from read endpoints violates the response contract and exposes it to anyone who can read payment data. The list endpoint exposes a secret for each returned payment.
