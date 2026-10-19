@@ -20,4 +20,10 @@
 
 **Actual Result:** The retry returns a different local `id` and `stripe_pi_id`, even though both responses contain the same idempotency key.
 
+**Evidence:**
+
+- Both requests return HTTP 201 and contain the same submitted `idempotency_key`.
+- The first and second responses contain different local payment IDs.
+- The responses also contain different Stripe PaymentIntent IDs. `tests/api/stripe.spec.ts` detects both mismatches in the idempotency retry test.
+
 **Severity Justification:** Payment clients retry requests after timeouts and network errors. Without idempotency at the application and Stripe request layers, one purchase can charge the customer twice and create reconciliation errors.

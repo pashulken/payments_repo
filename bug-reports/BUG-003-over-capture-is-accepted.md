@@ -20,4 +20,10 @@
 
 **Actual Result:** The API returns HTTP 200 and changes the payment to `succeeded`. The stored amount remains 6,003 cents, so the service ignores the requested amount but captures the authorization.
 
+**Evidence:**
+
+- Capture request body: `{"amount":6004}` for an authorization of 6,003 cents.
+- Observed capture response: HTTP 200 with payment status `succeeded`.
+- A follow-up `GET /api/payments/{id}` returns status `succeeded` and amount `6003`. The over-capture test in `tests/api/stripe.spec.ts` records the failed HTTP status and state assertions.
+
 **Severity Justification:** The service captures funds after receiving an invalid amount. Clients cannot rely on the documented validation, and they cannot restore the authorization after the state change.

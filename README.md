@@ -38,7 +38,9 @@ Use keys beginning with `sk_test_` and `pk_test_`. Keep them in `course-project/
 
 ## Setup
 
-Run these commands from the repository root in PowerShell:
+Choose the instructions for your operating system. Run all commands from the repository root.
+
+### Windows - PowerShell
 
 ```powershell
 npm ci
@@ -46,12 +48,28 @@ npx playwright install chromium
 Copy-Item course-project/.env.example course-project/.env
 ```
 
-Open `course-project/.env` and replace the placeholders with your Stripe test keys. Then start the service:
+Open `course-project/.env` in a text editor and replace the placeholders with your Stripe test keys. Then start the service:
 
 ```powershell
 docker compose --env-file course-project/.env --file course-project/docker-compose.yml up -d
 docker compose --env-file course-project/.env --file course-project/docker-compose.yml ps
 Invoke-RestMethod http://127.0.0.1:3000/api/health
+```
+
+### macOS - Terminal
+
+```bash
+npm ci
+npx playwright install chromium
+cp course-project/.env.example course-project/.env
+```
+
+Open `course-project/.env` in a text editor and replace the placeholders with your Stripe test keys. Then start the service:
+
+```bash
+docker compose --env-file course-project/.env --file course-project/docker-compose.yml up -d
+docker compose --env-file course-project/.env --file course-project/docker-compose.yml ps
+curl http://127.0.0.1:3000/api/health
 ```
 
 The health response should contain `"status":"ok"` and `"db":"connected"`. Open the checkout page at `http://localhost:3000/checkout`.
@@ -60,26 +78,35 @@ The health response should contain `"status":"ok"` and `"db":"connected"`. Open 
 
 Type-check the Playwright project:
 
-```powershell
+```text
 npm run typecheck:course
 ```
 
 Run the 24 tests that do not create Stripe objects:
 
-```powershell
+```text
 npm run test:course:ci
 ```
 
 Run the API contract tests. Without `RUN_STRIPE_TESTS=true`, Playwright runs the 24 credential-free contract tests and skips the 16 Stripe-backed contract tests:
 
-```powershell
+```text
 npm run test:course:contract
 ```
 
 Run all 42 API and browser tests with Stripe test mode enabled:
 
+Windows PowerShell:
+
 ```powershell
 $env:RUN_STRIPE_TESTS = 'true'
+npm run test:course
+```
+
+macOS Terminal:
+
+```bash
+export RUN_STRIPE_TESTS=true
 npm run test:course
 ```
 
@@ -87,11 +114,21 @@ The full suite returns a non-zero exit code while the confirmed service defects 
 
 Open the HTML report:
 
-```powershell
+```text
 npm run test:course:report
 ```
 
-Set `COURSE_API_BASE_URL` if the service uses a URL other than `http://127.0.0.1:3000`.
+Set `COURSE_API_BASE_URL` if the service uses a URL other than `http://127.0.0.1:3000`:
+
+```powershell
+# Windows PowerShell
+$env:COURSE_API_BASE_URL = 'http://127.0.0.1:3001'
+```
+
+```bash
+# macOS Terminal
+export COURSE_API_BASE_URL=http://127.0.0.1:3001
+```
 
 ## Confirmed defects
 
@@ -102,7 +139,7 @@ The test run confirmed four service defects:
 - A capture request above the authorized amount succeeds.
 - A partial refund marks the payment fully refunded and blocks the remaining refund.
 
-The fifth report covers a contradiction in the documented error type for malformed webhook JSON. Each report includes a summary, severity, pre-conditions, steps to reproduce, expected result, actual result, and severity justification.
+The fifth report covers a contradiction in the documented error type for malformed webhook JSON. Each report includes a summary, severity, pre-conditions, steps to reproduce, expected result, actual result, evidence, and severity justification.
 
 ## Continuous integration
 

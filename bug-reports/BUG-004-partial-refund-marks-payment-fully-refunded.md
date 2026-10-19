@@ -20,4 +20,10 @@
 
 **Actual Result:** The first partial refund changes the payment to `refunded`. The second refund returns HTTP 400 `invalid_state` with `Payment cannot be refunded (status: refunded)`.
 
+**Evidence:**
+
+- The first refund request for 2,000 cents returns HTTP 200 with `amount: 2000`.
+- A follow-up payment retrieval returns `status: "refunded"` while 5,001 cents remain refundable.
+- The request for the remaining 5,001 cents returns HTTP 400 with `type: "invalid_state"` and `message: "Payment cannot be refunded (status: refunded)"`. The partial-refund test in `tests/api/stripe.spec.ts` records these assertions.
+
 **Severity Justification:** The service stores the wrong financial state and blocks the documented way to return the remaining customer funds. Support teams must handle the missing refund outside the normal API flow, and reconciliation records will not match the intended refund amount.

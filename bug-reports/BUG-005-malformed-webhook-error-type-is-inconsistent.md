@@ -18,4 +18,10 @@
 
 **Actual Result:** The two sections use different error types. The service follows the webhook response table and returns `validation_error`.
 
+**Evidence:**
+
+- The common error table in `course-project/API.md` assigns `invalid_request` to malformed JSON.
+- The `POST /api/webhooks` response table assigns `validation_error` to `Invalid JSON body`.
+- Sending `{bad` with a valid webhook signature returns HTTP 400 with `type: "validation_error"` and an invalid JSON message. The malformed-webhook test in `tests/api/core.spec.ts` confirms the service response.
+
 **Severity Justification:** The issue does not change payment data, but API clients and contract tests may use the wrong error type. Teams must inspect both sections or test the service to learn which value it returns.

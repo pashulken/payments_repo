@@ -21,4 +21,10 @@
 
 **Actual Result:** Retrieval, listing, and capture responses return HTTP 200 with a populated `client_secret` property.
 
+**Evidence:**
+
+- `tests/api/core.spec.ts` reports a contract failure when a payment list contains `client_secret`.
+- `tests/api/stripe.spec.ts` reports the same contract failure after payment retrieval, capture, and refund operations.
+- AJV identifies `client_secret` as an additional property. The reports and examples omit the secret value.
+
 **Severity Justification:** The checkout client uses this credential to complete payment operations. Returning it after payment creation violates the response contract and exposes it through several API operations. The list endpoint exposes a secret for each returned payment.
