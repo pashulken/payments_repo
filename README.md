@@ -32,9 +32,27 @@ RUNBOOK.md               Detailed setup and handoff guide
 
 - Docker Desktop using Linux containers.
 - Node.js 20 or newer.
-- Stripe secret and publishable keys from test mode.
+- A Stripe Secret key (`SK Test`) beginning with `sk_test_`, provided separately by the project owner.
+- A Stripe Publishable key (`PK Test`) beginning with `pk_test_`, provided separately by the project owner.
 
-Use keys beginning with `sk_test_` and `pk_test_`. Keep them in `course-project/.env`; Git ignores that file.
+## Stripe test keys
+
+The project owner will send the `SK Test` and `PK Test` values directly to the person checking the course project. The keys are not stored in this repository.
+
+Add the provided keys before you start Docker or run the Stripe-backed tests:
+
+1. Copy `course-project/.env.example` to `course-project/.env` as shown in the setup instructions below.
+2. Open `course-project/.env`.
+3. Paste the provided **Secret key** (`SK Test`) and **Publishable key** (`PK Test`) in place of the placeholder values:
+
+```dotenv
+STRIPE_SECRET_KEY=sk_test_YOUR_SECRET_KEY
+STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY
+```
+
+Do not continue while either value still contains placeholder text such as `YOUR_KEY_HERE`. Docker passes these values to the Merchant Payment Service when the API container starts. If you change a key after starting Docker, restart the containers so the service receives the new value.
+
+Keep `course-project/.env` on your computer. Git ignores this file, and you must not commit or share your keys.
 
 ## Setup
 
@@ -48,7 +66,7 @@ npx playwright install chromium
 Copy-Item course-project/.env.example course-project/.env
 ```
 
-Open `course-project/.env` in a text editor and replace the placeholders with your Stripe test keys. Then start the service:
+Confirm that `course-project/.env` contains your `SK Test` and `PK Test` values. Then start the service:
 
 ```powershell
 docker compose --env-file course-project/.env --file course-project/docker-compose.yml up -d
@@ -64,7 +82,7 @@ npx playwright install chromium
 cp course-project/.env.example course-project/.env
 ```
 
-Open `course-project/.env` in a text editor and replace the placeholders with your Stripe test keys. Then start the service:
+Confirm that `course-project/.env` contains your `SK Test` and `PK Test` values. Then start the service:
 
 ```bash
 docker compose --env-file course-project/.env --file course-project/docker-compose.yml up -d
